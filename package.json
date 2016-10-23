@@ -1,0 +1,11 @@
+{
+  "name": "bart-api",
+  "version": "1.0.0",
+  "description": "API to get Bart estimated times for a specific BART platform",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Markis Taylor <m@rkis.cc>",
+  "license": "ISC"
+}
