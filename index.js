@@ -19,12 +19,16 @@ function httpHandler (request, response) {
 
   var times = cache.getCachedTime();
   if (times) {
-    respond(response, times, enableCors);
+    respond(response, 200, times, enableCors);
   } else {
-    getBartData(BART_KEY, BART_ORIG, BART_PLAT, function(data) {
+    getBartData(BART_KEY, BART_ORIG, BART_PLAT, function(status, data) {
       times = getTimes(data);
-      cache.setCachedTime(times);
-      respond(response, times, enableCors);
+      if (times) {
+        cache.setCachedTime(times);
+      } else {
+        times = cache.getStaleTime();
+      }
+      respond(response, status, times, enableCors);
     });
   }
 }
@@ -36,7 +40,7 @@ function httpHandler (request, response) {
  * @param {number[]} times
  * @param {boolean} enableCors
  */
-function respond(response, times, enableCors) {
+function respond(response, status, times, enableCors) {
   if (enableCors) {
     response.setHeader('Access-Control-Allow-Origin', '*');
     response.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -45,11 +49,12 @@ function respond(response, times, enableCors) {
   }
 
   var data = JSON.stringify(times);
-  response.writeHead(200, {
-    'Cache-Control': 'public, max-age=60',
-    'Content-Type': 'application/json',
-    'Content-Length': data.length
-  });
+  response.setHeader('Content-Type', 'application/json');
+  response.setHeader('Content-Length', data.length);
+  if (status === 200) {
+    response.setHeader('Cache-Control', 'public, max-age=60');
+  }
+  response.writeHead(status || 500);
   response.end(data);
 }
 
@@ -84,7 +89,7 @@ function getBartData(key, orig, plat, callback) {
       body += d;
     });
     response.on('end', function() {
-      callback(body);
+      callback(response.status, body);
     });
   });
 }
