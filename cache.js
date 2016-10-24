@@ -1,5 +1,5 @@
 var CACHE_TTL = (process.env.CACHE_TTL && parseInt(process.env.CACHE_TTL, 10)) || 60 * 1000;
-var cache = { time: new Date(), data: [20, 40]}
+var cache;
 
 /**
  * Get time from internal cache

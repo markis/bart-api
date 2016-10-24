@@ -50,7 +50,7 @@ function respond(response, status, times, enableCors) {
 
   var data = JSON.stringify(times);
   response.setHeader('Content-Type', 'application/json');
-  response.setHeader('Content-Length', data.length);
+  response.setHeader('Content-Length', data && data.length || 0);
   if (status === 200) {
     response.setHeader('Cache-Control', 'public, max-age=60');
   }
@@ -67,8 +67,11 @@ function respond(response, status, times, enableCors) {
 function getTimes(result) {
   // find all the <minutes>##</minutes> in the xml string
   var matches = result.match(/([0-9]+)\<\/minutes\>/g);
-  // convert them all into numbers and return the new array
-  return matches && matches.map(function(time) { return parseInt(time, 10); });
+  // convert strings to int, filter out bad numbers and then sort
+  return matches && matches
+      .map(function(time) { return parseInt(time, 10); })
+      .filter(function(time) { return time > 0 })
+      .sort(function(a, b) { return a > b ? 1 : b > a ? -1 : 0; });
 }
 
 /**
